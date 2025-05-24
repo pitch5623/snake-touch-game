@@ -9,7 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&display=swap" rel="stylesheet">
   <style>
     body { margin: 0; overflow: hidden; background: #FFFFFF; }
-    canvas { display: block; }
+    canvas { display: block; touch-action: none; }
     #score { 
       position: absolute; 
       top: 410px; 
@@ -38,6 +38,11 @@
       z-index: 10; 
       text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8); 
       display: none; 
+    }
+    button {
+      touch-action: none;
+      -webkit-user-select: none;
+      user-select: none;
     }
   </style>
 </head>
@@ -70,28 +75,33 @@
       textAlign(CENTER, CENTER);
 
       easyButton = createButton('Easy');
-      easyButton.position(width / 2 - 120, 490); // Moved down to where scores were
+      easyButton.position(width / 2 - 120, 490);
       easyButton.mousePressed(() => startGame(3));
+      easyButton.touchStarted(() => { startGame(3); return false; });
       styleButton(easyButton);
 
       normalButton = createButton('Normal');
-      normalButton.position(width / 2 - 40, 490); // Moved down to where scores were
+      normalButton.position(width / 2 - 40, 490);
       normalButton.mousePressed(() => startGame(7));
+      normalButton.touchStarted(() => { startGame(7); return false; });
       styleButton(normalButton);
 
       hardButton = createButton('Hard');
-      hardButton.position(width / 2 + 40, 490); // Moved down to where scores were
+      hardButton.position(width / 2 + 40, 490);
       hardButton.mousePressed(() => startGame(10));
+      hardButton.touchStarted(() => { startGame(10); return false; });
       styleButton(hardButton);
 
       returnButton = createButton('Retour');
       returnButton.position(width / 2 - 50, 450);
       returnButton.mousePressed(() => showMenu());
+      returnButton.touchStarted(() => { showMenu(); return false; });
       styleButton(returnButton);
 
       pauseButton = createButton('Pause');
       pauseButton.position(width / 2 + 50, 450);
       pauseButton.mousePressed(() => paused = !paused);
+      pauseButton.touchStarted(() => { paused = !paused; return false; });
       styleButton(pauseButton);
 
       showMenu();
@@ -178,7 +188,6 @@
     function drawWelcomeScreen() {
       image(startscreenImg, 0, 0, width, height);
       
-      // Message de bienvenue (unchanged)
       fill(255);
       textSize(32);
       textFont('Roboto');
@@ -190,7 +199,6 @@
       drawingContext.shadowBlur = 5;
       drawingContext.shadowColor = 'rgba(0, 0, 0, 0.5)';
       
-      // Nombre de parties jouées (moved to middle)
       fill(255);
       textSize(18);
       fill(0, 0, 0, 150);
@@ -198,7 +206,6 @@
       fill(255);
       text(`Parties jouées : ${gameCount}`, width / 2, height / 2 + 35);
 
-      // Meilleurs scores (moved to middle)
       fill(255);
       textSize(18);
       fill(0, 0, 0, 150);
@@ -212,7 +219,6 @@
     }
 
     function startGame(speed) {
-      console.log(`Starting game with speed: ${speed}`);
       gameSpeed = speed;
       frameRate(speed);
       gameState = 'playing';
