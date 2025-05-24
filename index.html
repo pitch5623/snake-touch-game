@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -9,7 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&display=swap" rel="stylesheet">
   <style>
     body { margin: 0; overflow: hidden; background: #FFFFFF; }
-    canvas { display: block; }
+    canvas { display: block; touch-action: none; }
     #score { 
       position: absolute; 
       top: 410px; 
@@ -39,6 +39,15 @@
       text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8); 
       display: none; 
     }
+    button {
+      touch-action: none;
+      -webkit-user-select: none;
+      user-select: none;
+      pointer-events: auto;
+      padding: 15px 25px;
+      font-size: 20px;
+      font-family: 'Roboto', sans-serif;
+    }
   </style>
 </head>
 <body>
@@ -57,9 +66,15 @@
     let gameCount = localStorage.getItem('gameCount') ? parseInt(localStorage.getItem('gameCount')) : 0;
 
     function preload() {
-      eatSound = loadSound('mange.wav');
-      gameOverSound = loadSound('game_over.wav');
-      startscreenImg = loadImage('startscreen.png');
+      try {
+        eatSound = loadSound('mange.wav');
+        gameOverSound = loadSound('game_over.wav');
+        startscreenImg = loadImage('startscreen.png');
+        console.log('Resources loaded successfully');
+      } catch (e) {
+        console.error('Error loading resources:', e);
+        alert('Failed to load game resources (sounds or image). Check if mange.wav, game_over.wav, and startscreen.png are in the correct folder.');
+      }
     }
 
     function setup() {
@@ -70,28 +85,33 @@
       textAlign(CENTER, CENTER);
 
       easyButton = createButton('Easy');
-      easyButton.position(width / 2 - 120, 490); // Moved down to where scores were
-      easyButton.mousePressed(() => startGame(3));
+      easyButton.position(width / 2 - 140, 480);
+      easyButton.mousePressed(() => { console.log('Easy button clicked'); startGame(3); });
+      easyButton.touchStarted(() => { console.log('Easy button touched'); startGame(3); return false; });
       styleButton(easyButton);
 
       normalButton = createButton('Normal');
-      normalButton.position(width / 2 - 40, 490); // Moved down to where scores were
-      normalButton.mousePressed(() => startGame(7));
+      normalButton.position(width / 2 - 40, 480);
+      normalButton.mousePressed(() => { console.log('Normal button clicked'); startGame(7); });
+      normalButton.touchStarted(() => { console.log('Normal button touched'); startGame(7); return false; });
       styleButton(normalButton);
 
       hardButton = createButton('Hard');
-      hardButton.position(width / 2 + 40, 490); // Moved down to where scores were
-      hardButton.mousePressed(() => startGame(10));
+      hardButton.position(width / 2 + 60, 480);
+      hardButton.mousePressed(() => { console.log('Hard button clicked'); startGame(10); });
+      hardButton.touchStarted(() => { console.log('Hard button touched'); startGame(10); return false; });
       styleButton(hardButton);
 
-      returnButton = createButton('Retour');
-      returnButton.position(width / 2 - 50, 450);
-      returnButton.mousePressed(() => showMenu());
+      returnButton = createButton('Return');
+      returnButton.position(width / 2 - 70, 440);
+      returnButton.mousePressed(() => { console.log('Return button clicked'); showMenu(); });
+      returnButton.touchStarted(() => { console.log('Return button touched'); showMenu(); return false; });
       styleButton(returnButton);
 
       pauseButton = createButton('Pause');
-      pauseButton.position(width / 2 + 50, 450);
-      pauseButton.mousePressed(() => paused = !paused);
+      pauseButton.position(width / 2 + 30, 440);
+      pauseButton.mousePressed(() => { console.log('Pause button clicked'); paused = !paused; });
+      pauseButton.touchStarted(() => { console.log('Pause button touched'); paused = !paused; return false; });
       styleButton(pauseButton);
 
       showMenu();
@@ -101,8 +121,8 @@
       button.style('background-color', '#000080');
       button.style('color', '#FFFFFF');
       button.style('font-family', 'Roboto, sans-serif');
-      button.style('font-size', '18px');
-      button.style('padding', '10px 20px');
+      button.style('font-size', '20px');
+      button.style('padding', '15px 25px');
       button.style('border', 'none');
       button.style('border-radius', '5px');
       button.style('cursor', 'pointer');
@@ -176,35 +196,40 @@
     }
 
     function drawWelcomeScreen() {
-      image(startscreenImg, 0, 0, width, height);
+      if (startscreenImg) {
+        image(startscreenImg, 0, 0, width, height);
+      } else {
+        background(255);
+        fill(255, 0, 0);
+        textSize(20);
+        text('Failed to load startscreen.png', width / 2, height / 2);
+      }
       
-      // Message de bienvenue (unchanged)
       fill(255);
-      textSize(32);
-      textFont('Roboto');
+      textSize(28);
+      textFont('Roboto', 'sans-serif');
       textStyle(BOLD);
+      textWrap(WORD);
       fill(0, 0, 0, 150);
-      rect(width / 2 - 180, 30, 360, 50, 10);
+      rect(width / 2 - 200, 40, 400, 50, 10);
       fill(255);
-      text('Bienvenue dans Snake Touch !', width / 2, 60);
+      text('Welcome to Snake Touch!', width / 2, 65);
       drawingContext.shadowBlur = 5;
       drawingContext.shadowColor = 'rgba(0, 0, 0, 0.5)';
       
-      // Nombre de parties jouées (moved to middle)
       fill(255);
       textSize(18);
       fill(0, 0, 0, 150);
       rect(width / 2 - 100, height / 2 + 20, 200, 30, 5);
       fill(255);
-      text(`Parties jouées : ${gameCount}`, width / 2, height / 2 + 35);
+      text(`Games played: ${gameCount}`, width / 2, height / 2 + 35);
 
-      // Meilleurs scores (moved to middle)
       fill(255);
       textSize(18);
       fill(0, 0, 0, 150);
       rect(width / 2 - 100, height / 2 + 60, 200, 90, 5);
       fill(255);
-      text('Meilleurs scores', width / 2, height / 2 + 80);
+      text('High scores', width / 2, height / 2 + 80);
       text(`Easy: ${localStorage.getItem('highScore3') || 0}`, width / 2, height / 2 + 105);
       text(`Normal: ${localStorage.getItem('highScore7') || 0}`, width / 2, height / 2 + 125);
       text(`Hard: ${localStorage.getItem('highScore10') || 0}`, width / 2, height / 2 + 145);
@@ -235,6 +260,7 @@
     }
 
     function showMenu() {
+      console.log('Returning to menu');
       gameState = 'menu';
       easyButton.show();
       normalButton.show();
@@ -254,6 +280,7 @@
 
     function touchStarted() {
       if (gameState === 'playing' && touches.length > 0 && touches[0].y > height - 150) {
+        console.log('Touch started at:', touches[0].x, touches[0].y);
         joystick.active = true;
         joystick.startX = touches[0].x;
         joystick.startY = touches[0].y;
@@ -265,6 +292,7 @@
 
     function touchMoved() {
       if (gameState === 'playing' && joystick.active && touches.length > 0) {
+        console.log('Touch moved to:', touches[0].x, touches[0].y);
         let dx = touches[0].x - joystick.startX;
         let dy = touches[0].y - joystick.startY;
         let dist = sqrt(dx * dx + dy * dy);
@@ -289,6 +317,7 @@
     }
 
     function touchEnded() {
+      console.log('Touch ended');
       joystick.active = false;
       return false;
     }
