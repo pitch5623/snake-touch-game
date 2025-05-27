@@ -15,8 +15,7 @@
       margin: 0; 
       overflow: hidden; 
       background: #FFFFFF; 
-      display: flex;
-      flex-direction: column; /* Permet de centrer verticalement */
+      display: flex; 
       justify-content: center; 
       align-items: center; 
       height: 100vh; 
@@ -24,25 +23,24 @@
     canvas { 
       display: block; 
       touch-action: none; 
-      max-width: 90vw; /* Limite à 90% de la largeur de l’écran */
-      max-height: 80vh; /* Limite à 80% de la hauteur de l’écran */
+      max-width: 100%; 
+      max-height: 100vh; 
     }
     #score { 
       position: absolute; 
       left: 50%; 
-      top: 5px;
+      top: 10px;
       transform: translateX(-50%); 
-      color: #9DCD5A; 
+      color: #000080; 
       font-family: 'Roboto', sans-serif; 
       font-weight: 700; 
       z-index: 10; 
       text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.9); 
       background: rgba(240, 240, 240, 0.8); 
-      padding: 3px 10px; 
+      padding: 5px 15px; 
       border-radius: 5px; 
       display: none; 
       transition: transform 0.2s;
-      font-size: min(4vw, 18px); /* Taille de police adaptative */
     }
     #pause { 
       position: absolute; 
@@ -177,15 +175,13 @@
     }
 
     function setup() {
-      let canvasWidth = min(windowWidth * 0.8, 400); // Réduit la largeur
+      let canvasWidth = min(windowWidth, 500);
       let canvasHeight = canvasWidth * 1.5;
-      if (canvasHeight > windowHeight * 0.9) {
-        canvasHeight = windowHeight * 0.9;
+      if (canvasHeight > windowHeight) {
+        canvasHeight = windowHeight;
         canvasWidth = canvasHeight / 1.5;
       }
       createCanvas(canvasWidth, canvasHeight);
-      document.getElementById('score').style.fontSize = `${min(width * 0.06, 18)}px`;
-      document.getElementById('pause').style.fontSize = `${min(width * 0.1, 24)}px`;
       gridSize = width / tileCount;
       frameRate(gameSpeed);
       snake = new Snake();
@@ -193,47 +189,45 @@
       textAlign(CENTER, CENTER);
 
       easyButton = select('#easyButton');
-      easyButton.style('font-size', `${min(width * 0.04, 16)}px`);
+      easyButton.style('font-size', `${width * 0.04}px`);
       easyButton.style('padding', `${width * 0.025}px ${width * 0.05}px`);
       easyButton.mousePressed(() => { console.log('Easy button clicked'); startGame(3); });
       easyButton.touchStarted(() => { console.log('Easy button touched'); startGame(3); return false; });
       styleButton(easyButton);
 
       normalButton = select('#normalButton');
-      normalButton.style('font-size', `${min(width * 0.04, 16)}px`);
+      normalButton.style('font-size', `${width * 0.04}px`);
       normalButton.style('padding', `${width * 0.025}px ${width * 0.05}px`);
       normalButton.mousePressed(() => { console.log('Normal button clicked'); startGame(7); });
       normalButton.touchStarted(() => { console.log('Normal button touched'); startGame(7); return false; });
       styleButton(normalButton);
 
       hardButton = select('#hardButton');
-      hardButton.style('font-size', `${min(width * 0.04, 16)}px`);
+      hardButton.style('font-size', `${width * 0.04}px`);
       hardButton.style('padding', `${width * 0.025}px ${width * 0.05}px`);
       hardButton.mousePressed(() => { console.log('Hard button clicked'); startGame(10); });
       hardButton.touchStarted(() => { console.log('Hard button touched'); startGame(10); return false; });
       styleButton(hardButton);
 
       statsButton = select('#statsButton');
-      statsButton.style('font-size', `${min(width * 0.04, 16)}px`);
+      statsButton.style('font-size', `${width * 0.04}px`);
       statsButton.style('padding', `${width * 0.025}px ${width * 0.05}px`);
       statsButton.mousePressed(() => { console.log('Stats button clicked'); showStats(); });
       statsButton.touchStarted(() => { console.log('Stats button touched'); showStats(); return false; });
       styleButton(statsButton);
 
       returnButton = createButton('Return');
-      returnButton.addClass('game-buttons');
-      returnButton.style('font-size', `${min(width * 0.04, 16)}px`);
+      returnButton.position(width * 0.35 - 60, height * 0.73);
+      returnButton.style('font-size', `${width * 0.04}px`);
       returnButton.style('padding', `${width * 0.025}px ${width * 0.05}px`);
-      returnButton.position(width * 0.35 - 60, tileCount * gridSize + 10); // Sous le cadre
       returnButton.mousePressed(() => { console.log('Return button clicked'); showMenu(); });
       returnButton.touchStarted(() => { console.log('Return button touched'); showMenu(); return false; });
       styleButton(returnButton);
 
-pauseButton = createButton('Pause');
-pauseButton.addClass('game-buttons');
-pauseButton.style('font-size', `${min(width * 0.04, 16)}px`);
+      pauseButton = createButton('Pause');
+pauseButton.position(width * 0.65 - 60, height * 0.73);
+pauseButton.style('font-size', `${width * 0.04}px`);
 pauseButton.style('padding', `${width * 0.025}px ${width * 0.05}px`);
-pauseButton.position(width * 0.65 - 60, tileCount * gridSize + 10); // Sous le cadre
 pauseButton.mousePressed(() => {
   console.log('Pause/Start/Retry button clicked');
   if (!gameStarted) {
@@ -287,7 +281,7 @@ styleButton(pauseButton);
 
       backButton = createButton('Back');
       backButton.addClass('back-button');
-      backButton.style('font-size', `${min(width * 0.04, 16)}px`);
+      backButton.style('font-size', `${width * 0.04}px`);
       backButton.style('padding', `${width * 0.025}px ${width * 0.05}px`);
       backButton.mousePressed(() => { console.log('Back button clicked'); showMenu(); });
       backButton.touchStarted(() => { console.log('Back button touched'); showMenu(); return false; });
@@ -301,24 +295,22 @@ styleButton(pauseButton);
     }
 
     function windowResized() {
-      let canvasWidth = min(windowWidth * 0.8, 400); // Réduit la largeur
+      let canvasWidth = min(windowWidth, 500);
       let canvasHeight = canvasWidth * 1.5;
-      if (canvasHeight > windowHeight * 0.9) {
-        canvasHeight = windowHeight * 0.9;
+      if (canvasHeight > windowHeight) {
+        canvasHeight = windowHeight;
         canvasWidth = canvasHeight / 1.5;
       }
-      resizeCanvasWidth, (canvasWidth, canvasHeight);
-      document.getElementById('score').style.fontSize = `${min(width * 0.06, 18)}px`;
-      document.getElementById('pause').style.fontSize = `${min(width * 0.1, 24)}px`;
+      resizeCanvas(canvasWidth, canvasHeight);
       gridSize = width / tileCount;
 
-      easyButton.style('font-size', `${min(width * 0.04, 16)}px`);
-      normalButton.style('font-size', `${min(width * 0.04, 16)}px`);
-      hardButton.style('font-size', `${min(width * 0.04, 16)}px`);
-      statsButton.style('font-size', `${min(width * 0.04, 16)}px`);
-      returnButton.style('font-size', `${min(width * 0.04, 16)}px`);
-      pauseButton.style('font-size', `${min(width * 0.04, 16)}px`);
-      backButton.style('font-size', `${min(width * 0.04, 16)}px`);
+      easyButton.style('font-size', `${width * 0.04}px`);
+      normalButton.style('font-size', `${width * 0.04}px`);
+      hardButton.style('font-size', `${width * 0.04}px`);
+      statsButton.style('font-size', `${width * 0.04}px`);
+      returnButton.style('font-size', `${width * 0.04}px`);
+      pauseButton.style('font-size', `${width * 0.04}px`);
+      backButton.style('font-size', `${width * 0.04}px`);
 
       easyButton.style('padding', `${width * 0.025}px ${width * 0.05}px`);
       normalButton.style('padding', `${width * 0.025}px ${width * 0.05}px`);
@@ -328,8 +320,8 @@ styleButton(pauseButton);
       pauseButton.style('padding', `${width * 0.025}px ${width * 0.05}px`);
       backButton.style('padding', `${width * 0.025}px ${width * 0.05}px`);
 
-      returnButton.position(width * 0.35 - 60, tileCount * gridSize + 10); // Sous le cadre
-      pauseButton.position(width * 0.65 - 60, tileCount * gridSize + 10); // Sous le cadre
+      returnButton.position(width * 0.35 - 60, height * 0.73);
+      pauseButton.position(width * 0.65 - 60, height * 0.73);
       backButton.position(width * 0.5 - 60, height * 0.80);
 
       document.getElementById('score').style.fontSize = `${width * 0.06}px`;
