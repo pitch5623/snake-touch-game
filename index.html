@@ -15,7 +15,8 @@
       margin: 0; 
       overflow: hidden; 
       background: #FFFFFF; 
-      display: flex; 
+      display: flex;
+      flex-direction: column; /* Centre verticalement et place les boutons en dessous */
       justify-content: center; 
       align-items: center; 
       height: 100vh; 
@@ -23,13 +24,13 @@
     canvas { 
       display: block; 
       touch-action: none; 
-      max-width: 100%; 
-      max-height: 100vh; 
+      max-width: 90vw; /* Limite à 90% de la largeur de l’écran */
+      max-height: 80vh; /* Limite à 80% de la hauteur pour laisser de l’espace */
     }
     #score { 
       position: absolute; 
       left: 50%; 
-      top: 10px;
+      top: 5px;
       transform: translateX(-50%); 
       color: #9DCD5A; 
       font-family: 'Roboto', sans-serif; 
@@ -37,10 +38,11 @@
       z-index: 10; 
       text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.9); 
       background: rgba(240, 240, 240, 0.8); 
-      padding: 5px 15px; 
+      padding: 3px 10px; 
       border-radius: 5px; 
       display: none; 
       transition: transform 0.2s;
+      font-size: min(4vw, 18px); /* Taille adaptative */
     }
     #pause { 
       position: absolute; 
@@ -59,7 +61,7 @@
       user-select: none;
       pointer-events: auto;
       font-family: 'Roboto', sans-serif;
-      margin: 0 10px;
+      margin: 0;
     }
     .level-buttons {
       position: absolute;
@@ -70,20 +72,14 @@
       flex-direction: row;
       justify-content: center;
       align-items: center;
-      gap: 2px; /* Espacement minimal entre les boutons */
+      gap: 2px;
     }
     .level-buttons button {
-      width: 80px; /* Largeur fixe pour uniformité */
-      padding: 8px 0; /* Padding uniforme */
-      font-size: 16px; /* Taille de police fixe */
-      text-align: center; /* Centrage du texte */
-      margin: 0; /* Supprime le margin pour éliminer l'espace supplémentaire */
-    }
-    .stats-button {
-      position: absolute;
-      top: 80%;
-      left: 50%;
-      transform: translateX(-50%);
+      width: 80px;
+      padding: 8px 0;
+      font-size: min(4vw, 16px); /* Adaptatif */
+      text-align: center;
+      margin: 0;
     }
     .stats-container {
       position: absolute;
@@ -91,14 +87,14 @@
       left: 50%;
       transform: translateX(-50%);
       background: linear-gradient(135deg, rgba(157, 205, 90, 0.9), rgba(120, 218, 120, 0.9));
-      padding: 15px; /* Réduit pour compacité */
+      padding: 15px;
       border-radius: 10px;
       box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
       text-align: center;
       font-family: 'Roboto', sans-serif;
       color: #FFFFFF;
-      width: 60%; /* Plus petite largeur */
-      max-width: 300px; /* Largeur max réduite */
+      width: 60%;
+      max-width: 300px;
       animation: slideIn 0.5s ease-out;
     }
     @keyframes slideIn {
@@ -106,37 +102,39 @@
       to { transform: translate(-50%, 0); opacity: 1; }
     }
     .stats-container h2 {
-      font-size: 1.5em; /* Taille réduite */
+      font-size: min(5vw, 1.5em);
       margin-bottom: 15px;
       text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
     }
     .stats-container p {
-      font-size: 1em; /* Taille réduite */
+      font-size: min(4vw, 1em);
       margin: 8px 0;
       text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
     }
     .back-button {
       position: absolute;
-      top: 80%; /* Ajusté pour la bannière plus petite */
+      top: 80%;
       left: 50%;
       transform: translateX(-50%);
       background: #FF4444;
       color: #FFFFFF;
-      padding: 8px 16px; /* Réduit */
+      padding: 8px 16px;
       border-radius: 50px;
-      font-size: 0.9em; /* Taille réduite */
+      font-size: min(4vw, 0.9em);
       transition: transform 0.3s, box-shadow 0.3s;
-    }
-    .game-buttons {
-      position: absolute;
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      width: 100%;
     }
     .back-button:hover {
       transform: translateX(-50%) scale(1.05);
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+    }
+    .game-buttons {
+      position: absolute;
+      top: 100%; /* Place sous le canvas */
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      width: 100%;
+      margin-top: 10px; /* Espace sous le canvas */
     }
   </style>
 </head>
@@ -160,8 +158,9 @@
     const fruitDuration = 7000;
     let eatSound, gameOverSound, startscreenImg;
     let gameCount = localStorage.getItem('gameCount') ? parseInt(localStorage.getItem('gameCount')) : 0;
-    let gameStarted = false; // Indique si le jeu a démarré
-    let gameOver = false; // Indique si la partie est terminée
+    let gameStarted = false;
+    let gameOver = false;
+
     function preload() {
       try {
         eatSound = loadSound('mange.wav');
@@ -170,15 +169,15 @@
         console.log('Resources loaded successfully');
       } catch (e) {
         console.error('Error loading resources:', e);
-        alert('Failed to load game resources (sounds or image). Check if mange.wav, game_over.wav, and startscreen.png are in the correct folder.');
+        alert('Failed to load game resources (sounds or image). Check if mange.wav, game_over.wav, and startscreen1.jpeg are in the correct folder.');
       }
     }
 
     function setup() {
-      let canvasWidth = min(windowWidth, 500);
+      let canvasWidth = min(windowWidth * 0.8, 400); // Largeur réduite
       let canvasHeight = canvasWidth * 1.5;
-      if (canvasHeight > windowHeight) {
-        canvasHeight = windowHeight;
+      if (canvasHeight > windowHeight * 0.8) {
+        canvasHeight = windowHeight * 0.8;
         canvasWidth = canvasHeight / 1.5;
       }
       createCanvas(canvasWidth, canvasHeight);
@@ -189,128 +188,128 @@
       textAlign(CENTER, CENTER);
 
       easyButton = select('#easyButton');
-      easyButton.style('font-size', `${width * 0.04}px`);
+      easyButton.style('font-size', `${min(width * 0.04, 16)}px`);
       easyButton.style('padding', `${width * 0.025}px ${width * 0.05}px`);
       easyButton.mousePressed(() => { console.log('Easy button clicked'); startGame(3); });
       easyButton.touchStarted(() => { console.log('Easy button touched'); startGame(3); return false; });
       styleButton(easyButton);
 
       normalButton = select('#normalButton');
-      normalButton.style('font-size', `${width * 0.04}px`);
+      normalButton.style('font-size', `${min(width * 0.04, 16)}px`);
       normalButton.style('padding', `${width * 0.025}px ${width * 0.05}px`);
       normalButton.mousePressed(() => { console.log('Normal button clicked'); startGame(7); });
       normalButton.touchStarted(() => { console.log('Normal button touched'); startGame(7); return false; });
       styleButton(normalButton);
 
       hardButton = select('#hardButton');
-      hardButton.style('font-size', `${width * 0.04}px`);
+      hardButton.style('font-size', `${min(width * 0.04, 16)}px`);
       hardButton.style('padding', `${width * 0.025}px ${width * 0.05}px`);
       hardButton.mousePressed(() => { console.log('Hard button clicked'); startGame(10); });
       hardButton.touchStarted(() => { console.log('Hard button touched'); startGame(10); return false; });
       styleButton(hardButton);
 
       statsButton = select('#statsButton');
-      statsButton.style('font-size', `${width * 0.04}px`);
+      statsButton.style('font-size', `${min(width * 0.04, 16)}px`);
       statsButton.style('padding', `${width * 0.025}px ${width * 0.05}px`);
       statsButton.mousePressed(() => { console.log('Stats button clicked'); showStats(); });
       statsButton.touchStarted(() => { console.log('Stats button touched'); showStats(); return false; });
       styleButton(statsButton);
 
       returnButton = createButton('Return');
-      returnButton.position(width * 0.35 - 60, height * 0.73);
-      returnButton.style('font-size', `${width * 0.04}px`);
+      returnButton.addClass('game-buttons');
+      returnButton.style('font-size', `${min(width * 0.04, 16)}px`);
       returnButton.style('padding', `${width * 0.025}px ${width * 0.05}px`);
       returnButton.mousePressed(() => { console.log('Return button clicked'); showMenu(); });
       returnButton.touchStarted(() => { console.log('Return button touched'); showMenu(); return false; });
       styleButton(returnButton);
 
       pauseButton = createButton('Pause');
-pauseButton.position(width * 0.65 - 60, height * 0.73);
-pauseButton.style('font-size', `${width * 0.04}px`);
-pauseButton.style('padding', `${width * 0.025}px ${width * 0.05}px`);
-pauseButton.mousePressed(() => {
-  console.log('Pause/Start/Retry button clicked');
-  if (!gameStarted) {
-    gameStarted = true;
-    paused = false;
-    pauseButton.html('Pause');
-  } else if (gameOver) {
-    gameOver = false;
-    gameStarted = true;
-    paused = false;
-    score = 0;
-    snake = new Snake();
-    fruit = new Fruit();
-    blueFruit = null;
-    blackFruit = null;
-    blueFruitTime = 0;
-    blackFruitTime = 0;
-    pauseButton.html('Pause');
-    gameCount++;
-    localStorage.setItem('gameCount', gameCount);
-  } else {
-    paused = !paused;
-  }
-});
-pauseButton.touchStarted(() => {
-  console.log('Pause/Start/Retry button touched');
-  if (!gameStarted) {
-    gameStarted = true;
-    paused = false;
-    pauseButton.html('Pause');
-  } else if (gameOver) {
-    gameOver = false;
-    gameStarted = true;
-    paused = false;
-    score = 0;
-    snake = new Snake();
-    fruit = new Fruit();
-    blueFruit = null;
-    blackFruit = null;
-    blueFruitTime = 0;
-    blackFruitTime = 0;
-    pauseButton.html('Pause');
-    gameCount++;
-    localStorage.setItem('gameCount', gameCount);
-  } else {
-    paused = !paused;
-  }
-  return false;
-});
-styleButton(pauseButton);
+      pauseButton.addClass('game-buttons');
+      pauseButton.style('font-size', `${min(width * 0.04, 16)}px`);
+      pauseButton.style('padding', `${width * 0.025}px ${width * 0.05}px`);
+      pauseButton.mousePressed(() => {
+        console.log('Pause/Start/Retry button clicked');
+        if (!gameStarted) {
+          gameStarted = true;
+          paused = false;
+          pauseButton.html('Pause');
+        } else if (gameOver) {
+          gameOver = false;
+          gameStarted = true;
+          paused = false;
+          score = 0;
+          snake = new Snake();
+          fruit = new Fruit();
+          blueFruit = null;
+          blackFruit = null;
+          blueFruitTime = 0;
+          blackFruitTime = 0;
+          pauseButton.html('Pause');
+          gameCount++;
+          localStorage.setItem('gameCount', gameCount);
+        } else {
+          paused = !paused;
+        }
+      });
+      pauseButton.touchStarted(() => {
+        console.log('Pause/Start/Retry button touched');
+        if (!gameStarted) {
+          gameStarted = true;
+          paused = false;
+          pauseButton.html('Pause');
+        } else if (gameOver) {
+          gameOver = false;
+          gameStarted = true;
+          paused = false;
+          score = 0;
+          snake = new Snake();
+          fruit = new Fruit();
+          blueFruit = null;
+          blackFruit = null;
+          blueFruitTime = 0;
+          blackFruitTime = 0;
+          pauseButton.html('Pause');
+          gameCount++;
+          localStorage.setItem('gameCount', gameCount);
+        } else {
+          paused = !paused;
+        }
+        return false;
+      });
+      styleButton(pauseButton);
 
       backButton = createButton('Back');
       backButton.addClass('back-button');
-      backButton.style('font-size', `${width * 0.04}px`);
+      backButton.style('font-size', `${min(width * 0.04, 16)}px`);
       backButton.style('padding', `${width * 0.025}px ${width * 0.05}px`);
       backButton.mousePressed(() => { console.log('Back button clicked'); showMenu(); });
       backButton.touchStarted(() => { console.log('Back button touched'); showMenu(); return false; });
       styleButton(backButton);
       backButton.hide();
 
-      document.getElementById('score').style.fontSize = `${width * 0.06}px`;
-      document.getElementById('pause').style.fontSize = `${width * 0.1}px`;
+      document.getElementById('score').style.fontSize = `${min(width * 0.06, 18)}px`;
+      document.getElementById('pause').style.fontSize = `${min(width * 0.1, 24)}px`;
 
       showMenu();
     }
 
     function windowResized() {
-      let canvasWidth = min(windowWidth, 500);
+      let canvasWidth = min(windowWidth * 0.8, 400); // Largeur réduite
       let canvasHeight = canvasWidth * 1.5;
-      if (canvasHeight > windowHeight) {
-        canvasHeight = windowHeight;
+      if (canvasHeight > windowHeight * 0.8) {
+        canvasHeight = windowHeight * 0.8;
         canvasWidth = canvasHeight / 1.5;
       }
       resizeCanvas(canvasWidth, canvasHeight);
       gridSize = width / tileCount;
 
-      easyButton.style('font-size', `${width * 0.04}px`);
-      normalButton.style('font-size', `${width * 0.04}px`);
-      hardButton.style('font-size', `${width * 0.04}px`);
-      statsButton.style('font-size', `${width * 0.04}px`);
-      returnButton.style('font-size', `${width * 0.04}px`);
-      pauseButton.style('font-size', `${width * 0.04}px`);
-      backButton.style('font-size', `${width * 0.04}px`);
+      easyButton.style('font-size', `${min(width * 0.04, 16)}px`);
+      normalButton.style('font-size', `${min(width * 0.04, 16)}px`);
+      hardButton.style('font-size', `${min(width * 0.04, 16)}px`);
+      statsButton.style('font-size', `${min(width * 0.04, 16)}px`);
+      returnButton.style('font-size', `${min(width * 0.04, 16)}px`);
+      pauseButton.style('font-size', `${min(width * 0.04, 16)}px`);
+      backButton.style('font-size', `${min(width * 0.04, 16)}px`);
 
       easyButton.style('padding', `${width * 0.025}px ${width * 0.05}px`);
       normalButton.style('padding', `${width * 0.025}px ${width * 0.05}px`);
@@ -320,12 +319,8 @@ styleButton(pauseButton);
       pauseButton.style('padding', `${width * 0.025}px ${width * 0.05}px`);
       backButton.style('padding', `${width * 0.025}px ${width * 0.05}px`);
 
-      returnButton.position(width * 0.35 - 60, height * 0.73);
-      pauseButton.position(width * 0.65 - 60, height * 0.73);
-      backButton.position(width * 0.5 - 60, height * 0.80);
-
-      document.getElementById('score').style.fontSize = `${width * 0.06}px`;
-      document.getElementById('pause').style.fontSize = `${width * 0.1}px`;
+      document.getElementById('score').style.fontSize = `${min(width * 0.06, 18)}px`;
+      document.getElementById('pause').style.fontSize = `${min(width * 0.1, 24)}px`;
     }
 
     function styleButton(button) {
@@ -433,16 +428,15 @@ styleButton(pauseButton);
         background(255);
         fill(255, 0, 0);
         textSize(width * 0.05);
-        text('Failed to load startscreen.png', width / 2, height / 2);
+        text('Failed to load startscreen1.jpeg', width / 2, height / 2);
       }
       
       fill(255);
       textSize(width * 0.08);
-      textFont('Roboto', 'sans-serif');
+      textFont('Roboto');
       textStyle(BOLD);
-      textWrap(WORD);
       fill(0, 0, 0, 150);
-      
+      rect(width / 2 - width * 0.45, height * 0.07, width * 0.9, height * 0.1, 10);
       fill(255);
       text('Snake Touch', width / 2, height * 0.12);
       drawingContext.shadowBlur = 5;
@@ -486,17 +480,17 @@ styleButton(pauseButton);
       gameSpeed = speed;
       frameRate(speed);
       gameState = 'playing';
-      gameStarted = false; // Jeu préparé mais pas encore démarré
+      gameStarted = false;
       easyButton.hide();
       normalButton.hide();
       hardButton.hide();
       statsButton.hide();
       returnButton.show();
       pauseButton.show();
-      pauseButton.html('Start'); // Affiche "Start" au lieu de "Pause"
+      pauseButton.html('Start');
       document.getElementById('score').style.display = 'block';
       score = 0;
-      paused = true; // Commence en pause jusqu'à ce que "Start" soit cliqué
+      paused = true;
       snake = new Snake();
       fruit = new Fruit();
       blueFruit = null;
@@ -529,7 +523,7 @@ styleButton(pauseButton);
       blueFruitTime = 0;
       blackFruitTime = 0;
       gameStarted = false;
-      gameOver = false; // Réinitialise gameOver
+      gameOver = false;
     }
 
     function touchStarted() {
@@ -558,7 +552,7 @@ styleButton(pauseButton);
           joystick.x = touches[0].x;
           joystick.y = touches[0].y;
         }
-        if (!paused) {
+        if (!paused && !gameOver) {
           let angle = atan2(joystick.y - joystick.startY, joystick.x - joystick.startX);
           if (abs(angle) < PI/4 || abs(angle) > 3*PI/4) {
             snake.dir(abs(angle) < PI/4 ? 1 : -1, 0);
@@ -634,9 +628,9 @@ styleButton(pauseButton);
           let highScore = localStorage.getItem('highScore' + gameSpeed) || 0;
           if (score > highScore) localStorage.setItem('highScore' + gameSpeed, score);
           gameOverSound.play();
-          gameOver = true; // Passe à l’état gameOver
-          paused = true; // Met en pause
-          pauseButton.html('Retry'); // Change le bouton en "Retry"
+          gameOver = true;
+          paused = true;
+          pauseButton.html('Retry');
           return;
         }
         
@@ -645,9 +639,9 @@ styleButton(pauseButton);
             let highScore = localStorage.getItem('highScore' + gameSpeed) || 0;
             if (score > highScore) localStorage.setItem('highScore' + gameSpeed, score);
             gameOverSound.play();
-            gameOver = true; // Passe à l’état gameOver
-            paused = true; // Met en pause
-            pauseButton.html('Retry'); // Change le bouton en "Retry"
+            gameOver = true;
+            paused = true;
+            pauseButton.html('Retry');
             return;
           }
         }
@@ -690,7 +684,7 @@ styleButton(pauseButton);
           stroke(0, 128, 0);
           strokeWeight(gridSize * 0.8);
           drawingContext.shadowBlur = 5;
-          drawingContext.shadowColor = "rgba(0, 0, 0, 0.3)";
+          drawingContext.shadowColor = 'rgba(0, 0, 0, 0.3)';
           for (let i = 0; i < this.body.length - 1; i++) {
             let seg1 = this.body[i];
             let seg2 = this.body[i + 1];
@@ -714,7 +708,7 @@ styleButton(pauseButton);
         else if (this.dirY === -1) rotate(-HALF_PI);
         fill(0, 150, 0);
         drawingContext.shadowBlur = 5;
-        drawingContext.shadowColor = "rgba(0, 0, 0, 0.3)";
+        drawingContext.shadowColor = 'rgba(0, 0, 0, 0.3)';
         ellipse(0, 0, gridSize * 0.8, gridSize * 0.8);
         fill(255);
         ellipse(-gridSize / 4, -gridSize / 8, gridSize / 8, gridSize / 8);
@@ -733,7 +727,7 @@ styleButton(pauseButton);
       show() {
         fill(200, 0, 0);
         drawingContext.shadowBlur = 5;
-        drawingContext.shadowColor = "rgba(0, 0, 0, 0.3)";
+        drawingContext.shadowColor = 'rgba(0, 0, 0, 0.3)';
         ellipse(this.x * gridSize + gridSize / 2, this.y * gridSize + gridSize / 2, gridSize * 0.8, gridSize * 0.8);
         drawingContext.shadowBlur = 0;
       }
@@ -748,7 +742,7 @@ styleButton(pauseButton);
       show() {
         fill(0, 0, 255);
         drawingContext.shadowBlur = 5;
-        drawingContext.shadowColor = "rgba(0, 0, 0, 0.3)";
+        drawingContext.shadowColor = 'rgba(0, 0, 0, 0.3)';
         ellipse(this.x * gridSize + gridSize / 2, this.y * gridSize + gridSize / 2, gridSize * 0.8, gridSize * 0.8);
         drawingContext.shadowBlur = 0;
       }
@@ -763,7 +757,7 @@ styleButton(pauseButton);
       show() {
         fill(0, 0, 0);
         drawingContext.shadowBlur = 5;
-        drawingContext.shadowColor = "rgba(0, 0, 0, 0.3)";
+        drawingContext.shadowColor = 'rgba(0, 0, 0, 0.3)';
         ellipse(this.x * gridSize + gridSize / 2, this.y * gridSize + gridSize / 2, gridSize * 0.8, gridSize * 0.8);
         drawingContext.shadowBlur = 0;
       }
