@@ -11,11 +11,25 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/addons/p5.sound.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&display=swap" rel="stylesheet">
   <style>
-    body { margin: 0; overflow: hidden; background: #FFFFFF; display: flex; justify-content: center; align-items: center; height: 100vh; }
-    canvas { display: block; touch-action: none; max-width: 100%; max-height: 100vh; }
+    body { 
+      margin: 0; 
+      overflow: hidden; 
+      background: #FFFFFF; 
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+      height: 100vh; 
+    }
+    canvas { 
+      display: block; 
+      touch-action: none; 
+      max-width: 100%; 
+      max-height: 100vh; 
+    }
     #score { 
       position: absolute; 
       left: 50%; 
+      top: 10px;
       transform: translateX(-50%); 
       color: #000080; 
       font-family: 'Roboto', sans-serif; 
@@ -45,29 +59,107 @@
       user-select: none;
       pointer-events: auto;
       font-family: 'Roboto', sans-serif;
+      margin: 0 10px;
+    }
+    .level-buttons {
+      position: absolute;
+      top: 70%;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      gap: 2px; /* Espacement minimal entre les boutons */
+    }
+    .level-buttons button {
+      width: 80px; /* Largeur fixe pour uniformité */
+      padding: 8px 0; /* Padding uniforme */
+      font-size: 16px; /* Taille de police fixe */
+      text-align: center; /* Centrage du texte */
+      margin: 0; /* Supprime le margin pour éliminer l'espace supplémentaire */
+    }
+    .stats-button {
+      position: absolute;
+      top: 80%;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .stats-container {
+      position: absolute;
+      top: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, rgba(157, 205, 90, 0.9), rgba(120, 218, 120, 0.9));
+      padding: 15px; /* Réduit pour compacité */
+      border-radius: 10px;
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      font-family: 'Roboto', sans-serif;
+      color: #FFFFFF;
+      width: 60%; /* Plus petite largeur */
+      max-width: 300px; /* Largeur max réduite */
+      animation: slideIn 0.5s ease-out;
+    }
+    @keyframes slideIn {
+      from { transform: translate(-50%, -20%); opacity: 0; }
+      to { transform: translate(-50%, 0); opacity: 1; }
+    }
+    .stats-container h2 {
+      font-size: 1.5em; /* Taille réduite */
+      margin-bottom: 15px;
+      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+    }
+    .stats-container p {
+      font-size: 1em; /* Taille réduite */
+      margin: 8px 0;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+    }
+    .back-button {
+      position: absolute;
+      top: 80%; /* Ajusté pour la bannière plus petite */
+      left: 50%;
+      transform: translateX(-50%);
+      background: #FF4444;
+      color: #FFFFFF;
+      padding: 8px 16px; /* Réduit */
+      border-radius: 50px;
+      font-size: 0.9em; /* Taille réduite */
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .back-button:hover {
+      transform: translateX(-50%) scale(1.05);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
     }
   </style>
 </head>
 <body>
   <div id="score">Score: 0</div>
   <div id="pause">Pause</div>
+  <div class="level-buttons">
+    <button id="easyButton">Easy</button>
+    <button id="normalButton">Normal</button>
+    <button id="hardButton">Hard</button>
+    <button id="statsButton">Stats</button>
+  </div>
   <script>
     let snake, fruit, blueFruit, blackFruit, gridSize, tileCount = 20, score = 0;
     let joystick = { active: false, x: 0, y: 0, startX: 0, startY: 0 };
     let paused = false;
     let gameState = 'menu';
     let gameSpeed = 10;
-    let easyButton, normalButton, hardButton, returnButton, pauseButton;
+    let easyButton, normalButton, hardButton, statsButton, returnButton, pauseButton, backButton;
     let blueFruitTime = 0, blackFruitTime = 0;
     const fruitDuration = 7000;
     let eatSound, gameOverSound, startscreenImg;
     let gameCount = localStorage.getItem('gameCount') ? parseInt(localStorage.getItem('gameCount')) : 0;
-
+    let gameStarted = false; // Indique si le jeu a démarré
+    let gameOver = false; // Indique si la partie est terminée
     function preload() {
       try {
         eatSound = loadSound('mange.wav');
         gameOverSound = loadSound('game_over.wav');
-        startscreenImg = loadImage('startscreen.png');
+        startscreenImg = loadImage('startscreen1.jpeg');
         console.log('Resources loaded successfully');
       } catch (e) {
         console.error('Error loading resources:', e);
@@ -89,29 +181,33 @@
       fruit = new Fruit();
       textAlign(CENTER, CENTER);
 
-      easyButton = createButton('Easy');
-      easyButton.position(width * 0.25 - 60, height * 0.8);
+      easyButton = select('#easyButton');
       easyButton.style('font-size', `${width * 0.04}px`);
       easyButton.style('padding', `${width * 0.025}px ${width * 0.05}px`);
       easyButton.mousePressed(() => { console.log('Easy button clicked'); startGame(3); });
       easyButton.touchStarted(() => { console.log('Easy button touched'); startGame(3); return false; });
       styleButton(easyButton);
 
-      normalButton = createButton('Normal');
-      normalButton.position(width * 0.5 - 60, height * 0.8);
+      normalButton = select('#normalButton');
       normalButton.style('font-size', `${width * 0.04}px`);
       normalButton.style('padding', `${width * 0.025}px ${width * 0.05}px`);
       normalButton.mousePressed(() => { console.log('Normal button clicked'); startGame(7); });
       normalButton.touchStarted(() => { console.log('Normal button touched'); startGame(7); return false; });
       styleButton(normalButton);
 
-      hardButton = createButton('Hard');
-      hardButton.position(width * 0.75 - 60, height * 0.8);
+      hardButton = select('#hardButton');
       hardButton.style('font-size', `${width * 0.04}px`);
       hardButton.style('padding', `${width * 0.025}px ${width * 0.05}px`);
       hardButton.mousePressed(() => { console.log('Hard button clicked'); startGame(10); });
       hardButton.touchStarted(() => { console.log('Hard button touched'); startGame(10); return false; });
       styleButton(hardButton);
+
+      statsButton = select('#statsButton');
+      statsButton.style('font-size', `${width * 0.04}px`);
+      statsButton.style('padding', `${width * 0.025}px ${width * 0.05}px`);
+      statsButton.mousePressed(() => { console.log('Stats button clicked'); showStats(); });
+      statsButton.touchStarted(() => { console.log('Stats button touched'); showStats(); return false; });
+      styleButton(statsButton);
 
       returnButton = createButton('Return');
       returnButton.position(width * 0.35 - 60, height * 0.73);
@@ -122,14 +218,69 @@
       styleButton(returnButton);
 
       pauseButton = createButton('Pause');
-      pauseButton.position(width * 0.65 - 60, height * 0.73);
-      pauseButton.style('font-size', `${width * 0.04}px`);
-      pauseButton.style('padding', `${width * 0.025}px ${width * 0.05}px`);
-      pauseButton.mousePressed(() => { console.log('Pause button clicked'); paused = !paused; });
-      pauseButton.touchStarted(() => { console.log('Pause button touched'); paused = !paused; return false; });
-      styleButton(pauseButton);
+pauseButton.position(width * 0.65 - 60, height * 0.73);
+pauseButton.style('font-size', `${width * 0.04}px`);
+pauseButton.style('padding', `${width * 0.025}px ${width * 0.05}px`);
+pauseButton.mousePressed(() => {
+  console.log('Pause/Start/Retry button clicked');
+  if (!gameStarted) {
+    gameStarted = true;
+    paused = false;
+    pauseButton.html('Pause');
+  } else if (gameOver) {
+    gameOver = false;
+    gameStarted = true;
+    paused = false;
+    score = 0;
+    snake = new Snake();
+    fruit = new Fruit();
+    blueFruit = null;
+    blackFruit = null;
+    blueFruitTime = 0;
+    blackFruitTime = 0;
+    pauseButton.html('Pause');
+    gameCount++;
+    localStorage.setItem('gameCount', gameCount);
+  } else {
+    paused = !paused;
+  }
+});
+pauseButton.touchStarted(() => {
+  console.log('Pause/Start/Retry button touched');
+  if (!gameStarted) {
+    gameStarted = true;
+    paused = false;
+    pauseButton.html('Pause');
+  } else if (gameOver) {
+    gameOver = false;
+    gameStarted = true;
+    paused = false;
+    score = 0;
+    snake = new Snake();
+    fruit = new Fruit();
+    blueFruit = null;
+    blackFruit = null;
+    blueFruitTime = 0;
+    blackFruitTime = 0;
+    pauseButton.html('Pause');
+    gameCount++;
+    localStorage.setItem('gameCount', gameCount);
+  } else {
+    paused = !paused;
+  }
+  return false;
+});
+styleButton(pauseButton);
 
-      document.getElementById('score').style.top = `${height * 0.68}px`;
+      backButton = createButton('Back');
+      backButton.addClass('back-button');
+      backButton.style('font-size', `${width * 0.04}px`);
+      backButton.style('padding', `${width * 0.025}px ${width * 0.05}px`);
+      backButton.mousePressed(() => { console.log('Back button clicked'); showMenu(); });
+      backButton.touchStarted(() => { console.log('Back button touched'); showMenu(); return false; });
+      styleButton(backButton);
+      backButton.hide();
+
       document.getElementById('score').style.fontSize = `${width * 0.06}px`;
       document.getElementById('pause').style.fontSize = `${width * 0.1}px`;
 
@@ -146,39 +297,40 @@
       resizeCanvas(canvasWidth, canvasHeight);
       gridSize = width / tileCount;
 
-      easyButton.position(width * 0.25 - 60, height * 0.8);
-      normalButton.position(width * 0.5 - 60, height * 0.8);
-      hardButton.position(width * 0.75 - 60, height * 0.8);
-      returnButton.position(width * 0.35 - 60, height * 0.73);
-      pauseButton.position(width * 0.65 - 60, height * 0.73);
-
       easyButton.style('font-size', `${width * 0.04}px`);
       normalButton.style('font-size', `${width * 0.04}px`);
       hardButton.style('font-size', `${width * 0.04}px`);
+      statsButton.style('font-size', `${width * 0.04}px`);
       returnButton.style('font-size', `${width * 0.04}px`);
       pauseButton.style('font-size', `${width * 0.04}px`);
+      backButton.style('font-size', `${width * 0.04}px`);
 
       easyButton.style('padding', `${width * 0.025}px ${width * 0.05}px`);
       normalButton.style('padding', `${width * 0.025}px ${width * 0.05}px`);
       hardButton.style('padding', `${width * 0.025}px ${width * 0.05}px`);
+      statsButton.style('padding', `${width * 0.025}px ${width * 0.05}px`);
       returnButton.style('padding', `${width * 0.025}px ${width * 0.05}px`);
       pauseButton.style('padding', `${width * 0.025}px ${width * 0.05}px`);
+      backButton.style('padding', `${width * 0.025}px ${width * 0.05}px`);
 
-      document.getElementById('score').style.top = `${height * 0.68}px`;
+      returnButton.position(width * 0.35 - 60, height * 0.73);
+      pauseButton.position(width * 0.65 - 60, height * 0.73);
+      backButton.position(width * 0.5 - 60, height * 0.80);
+
       document.getElementById('score').style.fontSize = `${width * 0.06}px`;
       document.getElementById('pause').style.fontSize = `${width * 0.1}px`;
     }
 
     function styleButton(button) {
-      button.style('background-color', '#000080');
+      button.style('background-color', '#9DCD5A');
       button.style('color', '#FFFFFF');
       button.style('border', 'none');
-      button.style('border-radius', '5px');
+      button.style('border-radius', '50px');
       button.style('cursor', 'pointer');
-      button.style('transition', 'background-color 0.3s, box-shadow 0.3s');
+      button.style('transition', 'background-color 0.3s, box-shadow 0.3s, transform 0.3s');
       button.style('box-shadow', '2px 2px 5px rgba(0,0,0,0.3)');
-      button.mouseOver(() => button.style('background-color', '#0000B0'));
-      button.mouseOut(() => button.style('background-color', '#000080'));
+      button.mouseOver(() => button.style('background-color', '#78DA78').style('transform', 'scale(1.05)'));
+      button.mouseOut(() => button.style('background-color', '#9DCD5A').style('transform', 'scale(1)'));
     }
 
     function draw() {
@@ -186,6 +338,20 @@
         drawWelcomeScreen();
         returnButton.hide();
         pauseButton.hide();
+        backButton.hide();
+        easyButton.show();
+        normalButton.show();
+        hardButton.show();
+        statsButton.show();
+      } else if (gameState === 'stats') {
+        drawStatsScreen();
+        easyButton.hide();
+        normalButton.hide();
+        hardButton.hide();
+        statsButton.hide();
+        returnButton.hide();
+        pauseButton.hide();
+        backButton.show();
       } else {
         background(255);
         fill(240, 240, 240);
@@ -204,7 +370,7 @@
         rect(0, 0, width, tileCount * gridSize);
         noStroke();
         
-        if (!paused) {
+        if (gameStarted && !paused && !gameOver) {
           snake.update();
           if (score >= 15 && frameCount % Math.round(120 * (10 / gameSpeed)) === 0 && !blueFruit && !blackFruit) {
             let spawnChance = random();
@@ -237,10 +403,19 @@
           ellipse(joystick.x, joystick.y, width * 0.1, width * 0.1);
         }
         
+        if (gameOver) {
+          fill(255, 0, 0);
+          textSize(width * 0.1);
+          textFont('Roboto');
+          textStyle(BOLD);
+          text('Game Over', width / 2, height * 0.4);
+        }
+        
         document.getElementById('score').innerText = `Score: ${score}`;
-        document.getElementById('pause').style.display = paused ? 'block' : 'none';
+        document.getElementById('pause').style.display = (paused && !gameOver) ? 'block' : 'none';
         returnButton.show();
         pauseButton.show();
+        backButton.hide();
       }
     }
 
@@ -255,49 +430,66 @@
       }
       
       fill(255);
-      textSize(width * 0.07);
+      textSize(width * 0.08);
       textFont('Roboto', 'sans-serif');
       textStyle(BOLD);
       textWrap(WORD);
       fill(0, 0, 0, 150);
-      rect(width / 2 - width * 0.45, height * 0.07, width * 0.9, height * 0.1, 10);
-      fill(255);
-      text('Welcome to Snake Touch!', width / 2, height * 0.12);
-      drawingContext.shadowBlur = 5;
-      drawingContext.shadowColor = 'rgba(0, 0, 0, 0.5)';
       
       fill(255);
-      textSize(width * 0.045);
-      fill(0, 0, 0, 150);
-      rect(width / 2 - width * 0.25, height / 2 + height * 0.03, width * 0.5, height * 0.05, 5);
-      fill(255);
-      text(`Games played: ${gameCount}`, width / 2, height / 2 + height * 0.06);
-
-      fill(255);
-      textSize(width * 0.045);
-      fill(0, 0, 0, 150);
-      rect(width / 2 - width * 0.25, height / 2 + height * 0.1, width * 0.5, height * 0.15, 5);
-      fill(255);
-      text('High scores', width / 2, height / 2 + height * 0.13);
-      text(`Easy: ${localStorage.getItem('highScore3') || 0}`, width / 2, height / 2 + height * 0.18);
-      text(`Normal: ${localStorage.getItem('highScore7') || 0}`, width / 2, height / 2 + height * 0.21);
-      text(`Hard: ${localStorage.getItem('highScore10') || 0}`, width / 2, height / 2 + height * 0.24);
+      text('Snake Touch', width / 2, height * 0.12);
+      drawingContext.shadowBlur = 5;
+      drawingContext.shadowColor = 'rgba(0, 0, 0, 0.5)';
       drawingContext.shadowBlur = 0;
     }
 
+    function drawStatsScreen() {
+      if (startscreenImg) {
+        image(startscreenImg, 0, 0, width, height);
+        fill(0, 0, 0, 100);
+        rect(0, 0, width, height);
+      } else {
+        background(255);
+      }
+
+      let statsDiv = select('#statsDiv');
+      if (!statsDiv) {
+        statsDiv = createDiv('');
+        statsDiv.id('statsDiv');
+        statsDiv.class('stats-container');
+        statsDiv.html(`
+          <h2>Game Statistics</h2>
+          <p>Games Played: ${gameCount}</p>
+          <p>High Score (Easy): ${localStorage.getItem('highScore3') || 0}</p>
+          <p>High Score (Normal): ${localStorage.getItem('highScore7') || 0}</p>
+          <p>High Score (Hard): ${localStorage.getItem('highScore10') || 0}</p>
+        `);
+      }
+    }
+
+    function showStats() {
+      console.log('Showing stats screen');
+      gameState = 'stats';
+      document.getElementById('score').style.display = 'none';
+      document.getElementById('pause').style.display = 'none';
+    }
+
     function startGame(speed) {
-      console.log(`Starting game with speed: ${speed}`);
+      console.log(`Preparing game with speed: ${speed}`);
       gameSpeed = speed;
       frameRate(speed);
       gameState = 'playing';
+      gameStarted = false; // Jeu préparé mais pas encore démarré
       easyButton.hide();
       normalButton.hide();
       hardButton.hide();
+      statsButton.hide();
       returnButton.show();
       pauseButton.show();
+      pauseButton.html('Start'); // Affiche "Start" au lieu de "Pause"
       document.getElementById('score').style.display = 'block';
       score = 0;
-      paused = false;
+      paused = true; // Commence en pause jusqu'à ce que "Start" soit cliqué
       snake = new Snake();
       fruit = new Fruit();
       blueFruit = null;
@@ -314,10 +506,14 @@
       easyButton.show();
       normalButton.show();
       hardButton.show();
+      statsButton.show();
       returnButton.hide();
       pauseButton.hide();
+      backButton.hide();
       document.getElementById('score').style.display = 'none';
       document.getElementById('pause').style.display = 'none';
+      let statsDiv = select('#statsDiv');
+      if (statsDiv) statsDiv.remove();
       score = 0;
       snake = new Snake();
       fruit = new Fruit();
@@ -325,6 +521,8 @@
       blackFruit = null;
       blueFruitTime = 0;
       blackFruitTime = 0;
+      gameStarted = false;
+      gameOver = false; // Réinitialise gameOver
     }
 
     function touchStarted() {
@@ -373,8 +571,29 @@
 
     function keyPressed() {
       if (keyCode === 32 && gameState === 'playing') {
-        paused = !paused;
-      } else if (gameState === 'playing' && !paused) {
+        console.log('Spacebar pressed');
+        if (!gameStarted) {
+          gameStarted = true;
+          paused = false;
+          pauseButton.html('Pause');
+        } else if (gameOver) {
+          gameOver = false;
+          gameStarted = true;
+          paused = false;
+          score = 0;
+          snake = new Snake();
+          fruit = new Fruit();
+          blueFruit = null;
+          blackFruit = null;
+          blueFruitTime = 0;
+          blackFruitTime = 0;
+          pauseButton.html('Pause');
+          gameCount++;
+          localStorage.setItem('gameCount', gameCount);
+        } else {
+          paused = !paused;
+        }
+      } else if (gameState === 'playing' && gameStarted && !paused && !gameOver) {
         if (keyCode === LEFT_ARROW) {
           snake.dir(-1, 0);
         } else if (keyCode === RIGHT_ARROW) {
@@ -408,7 +627,9 @@
           let highScore = localStorage.getItem('highScore' + gameSpeed) || 0;
           if (score > highScore) localStorage.setItem('highScore' + gameSpeed, score);
           gameOverSound.play();
-          showMenu();
+          gameOver = true; // Passe à l’état gameOver
+          paused = true; // Met en pause
+          pauseButton.html('Retry'); // Change le bouton en "Retry"
           return;
         }
         
@@ -417,7 +638,9 @@
             let highScore = localStorage.getItem('highScore' + gameSpeed) || 0;
             if (score > highScore) localStorage.setItem('highScore' + gameSpeed, score);
             gameOverSound.play();
-            showMenu();
+            gameOver = true; // Passe à l’état gameOver
+            paused = true; // Met en pause
+            pauseButton.html('Retry'); // Change le bouton en "Retry"
             return;
           }
         }
